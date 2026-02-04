@@ -73,14 +73,11 @@ def generate_signal():
     return None
 
 
-def send_signal_notification(signal: str, price: float):
-    """
-    信号通知钩子：在这里接入 WhatsApp 推送。
+import subprocess
 
-    当前默认只是 print，你可以在这里：
-    - 调用 OpenClaw 的 HTTP API
-    - 或调用本机的 `openclaw` CLI 发送 WhatsApp 消息
-    """
+
+def send_signal_notification(signal: str, price: float):
+    """信号通知：通过本机 openclaw CLI 发送 WhatsApp 消息。"""
     msg = (
         f"[BTC 海龟信号]\n"
         f"时间: {now_str()}\n"
@@ -88,9 +85,19 @@ def send_signal_notification(signal: str, price: float):
         f"价格: {price:.2f} USD\n"
     )
 
-    # TODO: 在这里接你真正的 WhatsApp 发送逻辑
-    # 例如：调用一个本地命令 / HTTP 接口
-    print(f"[NOTIFY] {msg}")
+    try:
+        subprocess.run(
+            [
+                "openclaw", "message", "send",
+                "--channel=whatsapp",
+                "--target=+85268231734",
+                "--message", msg,
+            ],
+            check=True,
+        )
+        print(f"[NOTIFY_SENT] {msg}")
+    except Exception as e:
+        print(f"[NOTIFY_ERROR] {e}")
 
 
 def main_loop():
